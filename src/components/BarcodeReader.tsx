@@ -18,7 +18,7 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
 
   const startScanning = async () => {
     const codeReader = new BrowserMultiFormatReader();
-    let mounted = true;
+    const mounted = true;
     try {
       if (!videoRef.current) return;
 
@@ -28,7 +28,7 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { exact: 'environment' } }
         });
-      } catch (e) {
+      } catch {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
       }
       if (videoRef.current) {
