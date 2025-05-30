@@ -47,9 +47,21 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
         videoRef.current.srcObject = stream;
       }
 
+      // デバイス一覧から外カメラっぽいものを優先して選択
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      const selectedDeviceId = videoDevices[0]?.deviceId;
+      // デフォルトは最初
+      let selectedDeviceId = videoDevices[0]?.deviceId;
+      for (const device of videoDevices) {
+        if (
+          device.label.toLowerCase().includes('back') ||
+          device.label.toLowerCase().includes('rear') ||
+          device.label.includes('外')
+        ) {
+          selectedDeviceId = device.deviceId;
+          break;
+        }
+      }
 
       if (!selectedDeviceId) {
         throw new Error('カメラが見つかりませんでした。');
