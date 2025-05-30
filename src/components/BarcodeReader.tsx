@@ -15,6 +15,13 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleScanError = (message: string) => {
+    setError(message);
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    errorTimeoutRef.current = setTimeout(() => setError(null), 2000); // 2秒で消す
+  };
 
   const startScanning = async () => {
     const codeReader = new BrowserMultiFormatReader();
@@ -78,8 +85,12 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
             onResult?.(result.getText());
           }
           if (err && mounted) {
-            setError(err.message);
-            onError?.(err);
+            if (err.message === 'No MultiFormat Readers were able to detect the code.') {
+              handleScanError('バーコードが検出できませんでした。カメラにバーコードを映してください。');
+            } else {
+              setError(err.message);
+              onError?.(err);
+            }
           }
         }
       );
