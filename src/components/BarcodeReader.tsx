@@ -80,6 +80,22 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
         videoRef.current.srcObject = stream;
       }
 
+      // ストリームからビデオトラックを取得し、制約を適用
+      const track = stream.getVideoTracks()[0];
+      if (track && typeof track.applyConstraints === 'function') {
+        try {
+          await track.applyConstraints({
+            advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet]
+          } as MediaTrackConstraints);
+          console.log('コンティニュアスオートフォーカスを要求しました。');
+        } catch (err) {
+          console.warn('オートフォーカス制約の適用に失敗しました:', err);
+          // オートフォーカス制約が適用できなくても処理は続行
+        }
+      } else {
+          console.warn('applyConstraintsがサポートされていません。');
+      }
+
       setIsScanning(true);
       setError(null);
 
