@@ -32,11 +32,11 @@ jobs:
       
       - name: Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_BASE_PATH: '/2d-barcode-reader'
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        with:
-          static_site_generator: next
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
