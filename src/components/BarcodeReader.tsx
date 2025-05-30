@@ -83,6 +83,9 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
       setIsScanning(true);
       setError(null);
 
+      // カメラ許可後に再度デバイス一覧を取得
+      await getDevices();
+
       await codeReader.decodeFromVideoDevice(
         selectedDeviceId ?? null,
         videoRef.current,
