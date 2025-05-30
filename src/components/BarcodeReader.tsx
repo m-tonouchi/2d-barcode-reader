@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { BrowserMultiFormatReader, Result } from '@zxing/library';
 
 interface BarcodeReaderProps {
@@ -16,6 +16,8 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
   const handleScanError = (message: string) => {
     setError(message);
@@ -23,26 +25,50 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
     errorTimeoutRef.current = setTimeout(() => setError(null), 2000); // 2秒で消す
   };
 
+  const getDevices = async () => {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videos = devices.filter(device => device.kind === 'videoinput');
+    setVideoDevices(videos);
+    setSelectedDeviceId(videos[0]?.deviceId ?? null);
+  };
+
+  useEffect(() => {
+    getDevices();
+  }, []);
+
   const startScanning = async () => {
     const codeReader = new BrowserMultiFormatReader();
     const mounted = true;
     try {
       if (!videoRef.current) return;
 
-      // 1. まずfacingMode: 'environment'でカメラを起動し許可を得る
+      // 選択されたカメラでストリーム取得
       let stream: MediaStream | null = null;
       let gotCamera = false;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
-        });
-        gotCamera = true;
-      } catch {
+      if (selectedDeviceId) {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: selectedDeviceId } }
+          });
           gotCamera = true;
         } catch {
           gotCamera = false;
+        }
+      }
+      // deviceId指定で失敗した場合や未選択の場合はfacingModeでトライ
+      if (!gotCamera) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+          });
+          gotCamera = true;
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            gotCamera = true;
+          } catch {
+            gotCamera = false;
+          }
         }
       }
 
@@ -54,31 +80,11 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
         videoRef.current.srcObject = stream;
       }
 
-      // 2. 許可後にデバイス一覧を再取得し、外カメラのデバイスIDを優先
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      let selectedDeviceId = videoDevices[0]?.deviceId;
-      for (const device of videoDevices) {
-        if (
-          device.label.toLowerCase().includes('back') ||
-          device.label.toLowerCase().includes('rear') ||
-          device.label.includes('外')
-        ) {
-          selectedDeviceId = device.deviceId;
-          break;
-        }
-      }
-
-      if (!selectedDeviceId) {
-        throw new Error('カメラが見つかりませんでした。');
-      }
-
       setIsScanning(true);
       setError(null);
 
-      // 3. 外カメラのデバイスIDでdecodeFromVideoDeviceを呼ぶ
       await codeReader.decodeFromVideoDevice(
-        selectedDeviceId,
+        selectedDeviceId ?? null,
         videoRef.current,
         (result: Result | null, err?: Error) => {
           if (result && mounted) {
@@ -118,12 +124,25 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
         )}
       </div>
       {!isScanning && (
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-          onClick={startScanning}
-        >
-          カメラを起動
-        </button>
+        <>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+            onClick={startScanning}
+          >
+            カメラを起動
+          </button>
+          <select
+            className="mt-2 px-2 py-1 border rounded"
+            value={selectedDeviceId ?? ''}
+            onChange={e => setSelectedDeviceId(e.target.value || null)}
+          >
+            {videoDevices.map(device => (
+              <option key={device.deviceId} value={device.deviceId}>
+                {device.label || `カメラ${device.deviceId}`}
+              </option>
+            ))}
+          </select>
+        </>
       )}
       {error && (
         <div className="text-red-500 text-sm">{error}</div>
