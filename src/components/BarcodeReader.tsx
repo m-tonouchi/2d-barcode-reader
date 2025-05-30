@@ -29,12 +29,12 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
     try {
       if (!videoRef.current) return;
 
-      // 外カメラ優先でストリーム取得、失敗時のみ内カメラでリトライ
+      // 1. まずfacingMode: 'environment'でカメラを起動し許可を得る
       let stream: MediaStream | null = null;
       let gotCamera = false;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { exact: 'environment' } }
+          video: { facingMode: 'environment' }
         });
         gotCamera = true;
       } catch {
@@ -54,10 +54,9 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
         videoRef.current.srcObject = stream;
       }
 
-      // デバイス一覧から外カメラっぽいものを優先して選択
+      // 2. 許可後にデバイス一覧を再取得し、外カメラのデバイスIDを優先
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      // デフォルトは最初
       let selectedDeviceId = videoDevices[0]?.deviceId;
       for (const device of videoDevices) {
         if (
@@ -77,6 +76,7 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
       setIsScanning(true);
       setError(null);
 
+      // 3. 外カメラのデバイスIDでdecodeFromVideoDeviceを呼ぶ
       await codeReader.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current,
