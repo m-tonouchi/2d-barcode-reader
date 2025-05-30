@@ -24,8 +24,13 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
       try {
         if (!videoRef.current) return;
 
+        // まずカメラの許可を明示的にリクエスト
+        await navigator.mediaDevices.getUserMedia({ video: true });
+
         const devices = await navigator.mediaDevices.enumerateDevices();
+        console.log('取得したデバイス一覧:', devices);
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        console.log('ビデオデバイス:', videoDevices);
         const selectedDeviceId = videoDevices[0]?.deviceId;
 
         if (!selectedDeviceId) {
