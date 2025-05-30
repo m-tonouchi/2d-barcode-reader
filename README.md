@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 2Dバーコードリーダー
 
-## Getting Started
+Webブラウザで動作する2Dバーコードリーダーアプリケーションです。QRコードやその他の2Dバーコードをカメラで読み取ることができます。
 
-First, run the development server:
+## 機能
 
+- QRコード、DataMatrix、Aztec、PDF417などの2Dバーコードの読み取り
+- リアルタイムカメラフィード
+- モダンなUIデザイン
+- レスポンシブ対応
+
+## 技術スタック
+
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- @zxing/library
+
+## 開発環境のセットアップ
+
+1. リポジトリのクローン:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/2d-barcode-reader.git
+cd 2d-barcode-reader
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. 依存関係のインストール:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. 開発サーバーの起動:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. ブラウザで http://localhost:3000 を開く
 
-## Learn More
+## 使用方法
 
-To learn more about Next.js, take a look at the following resources:
+1. アプリケーションを開く
+2. カメラへのアクセスを許可する
+3. バーコードをカメラに向ける
+4. バーコードが読み取られると、結果が画面に表示される
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 注意事項
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- HTTPS環境またはlocalhostでの実行が必要です（カメラアクセスの要件）
+- カメラが搭載されているデバイスが必要です
+- 最新のWebブラウザ（Chrome、Firefox、Safari、Edge）での使用を推奨します
 
-## Deploy on Vercel
+## ライセンス
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MITライセンスの下で公開されています。詳細は[LICENSE](LICENSE)ファイルを参照してください。
