@@ -82,6 +82,7 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
         videoRef.current,
         (result: Result | null, err?: Error) => {
           if (result && mounted) {
+            setError(null); // スキャン成功時にエラーを消す
             onResult?.(result.getText());
           }
           if (err && mounted) {
