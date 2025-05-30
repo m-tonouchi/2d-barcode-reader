@@ -22,15 +22,27 @@ export const BarcodeReader: React.FC<BarcodeReaderProps> = ({
     try {
       if (!videoRef.current) return;
 
-      // 外カメラ優先でストリーム取得、失敗時は通常カメラ
-      let stream = null;
+      // 外カメラ優先でストリーム取得、失敗時のみ内カメラでリトライ
+      let stream: MediaStream | null = null;
+      let gotCamera = false;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { exact: 'environment' } }
         });
+        gotCamera = true;
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          gotCamera = true;
+        } catch {
+          gotCamera = false;
+        }
       }
+
+      if (!gotCamera || !stream) {
+        throw new Error('カメラが見つかりませんでした。');
+      }
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
